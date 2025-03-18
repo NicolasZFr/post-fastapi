@@ -8,7 +8,6 @@ from typing import Optional, Union
 # Importar funciones de otro archivo
 from app.main_functions import find_post
 
-
 app = FastAPI()
 
 class Post(BaseModel):
