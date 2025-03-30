@@ -2,15 +2,15 @@ from fastapi import status, HTTPException, Query, APIRouter
 
 from sqlmodel import select
 
-from .. import models, schemas, utils
+from .. import models, schemas
 from ..database import SessionDep, engine
 
-router = APIRouter()
+router = APIRouter(prefix="/api/posts", tags=["Post"])
 
 # ------------------- Endpoints -------------------
 
 # GET /posts --------------------------------------
-@router.get("/posts")
+@router.get("/")
 async def get_posts_list(session: SessionDep, Quantity: int = 10, Page: int = 1):
     query = select(models.Post).limit(Quantity).offset((Page - 1) * Quantity).order_by(models.Post.id.asc())
     posts = session.exec(query).all()  # Selecciona todos los registros de la tabla posts
@@ -21,7 +21,7 @@ async def get_posts_list(session: SessionDep, Quantity: int = 10, Page: int = 1)
     ]
     return {"data": ordered_posts}
 
-@router.get("/posts/latest")
+@router.get("/latest")
 async def get_latest_post(session: SessionDep):
     query = select(models.Post).order_by(models.Post.id.desc())
     post = session.exec(query).first()  # Selecciona todos los registros de la tabla posts
@@ -29,7 +29,7 @@ async def get_latest_post(session: SessionDep):
     ordered_posts = {field: getattr(post, field) for field in models.Post.model_fields.keys()}
     return {"data": ordered_posts}
 
-@router.get("/posts/{id}")
+@router.get("/{id}")
 async def get_post_object(session: SessionDep,id:int):
     post = session.exec(select(models.Post).where(models.Post.id == id)).all()
     if not post:
@@ -44,7 +44,7 @@ async def get_post_object(session: SessionDep,id:int):
 
 
 # POST /posts --------------------------------------
-@router.post("/posts",status_code=status.HTTP_201_CREATED, response_model=schemas.PostCreateResponse)
+@router.post("/",status_code=status.HTTP_201_CREATED, response_model=schemas.PostCreateResponse)
 async def create_posts(session: SessionDep, post: schemas.PostCreate):
     required_fields = ["title", "content", "rating"]
     missing_fields = [field for field in required_fields if field not in post.model_dump(exclude_unset=True)]
@@ -76,7 +76,7 @@ async def create_posts(session: SessionDep, post: schemas.PostCreate):
 
 
 # DELETE /posts --------------------------------------
-@router.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(id: int, session: SessionDep):
     post = session.get(models.Post, id)
 
@@ -87,7 +87,7 @@ async def delete_post(id: int, session: SessionDep):
     session.commit()
 
 # PUT /posts --------------------------------------
-@router.put("/posts/{id}")
+@router.put("/{id}")
 async def put_post(id: int, post: schemas.PostCreate, session: SessionDep):
     existing_post = session.get(models.Post, id)
 
@@ -110,7 +110,7 @@ async def put_post(id: int, post: schemas.PostCreate, session: SessionDep):
     return {"response": f"The post with id '{id}' was updated successfully", "data": {field: getattr(existing_post, field) for field in models.Post.model_fields.keys()}}
     
 # PATCH /posts --------------------------------------  
-@router.patch("/posts/{id}")
+@router.patch("/{id}")
 async def patch_post(id: int, post: schemas.PostCreate, session: SessionDep):
     existing_post = session.get(models.Post, id)
 

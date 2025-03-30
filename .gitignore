@@ -1,6 +1,5 @@
 venv
 copies
 __pycache__
-app/__pycache__
 .vscode
 security

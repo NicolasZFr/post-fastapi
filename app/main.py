@@ -9,7 +9,22 @@ from . import models, schemas, utils
 from .database import SessionDep, lifespan, engine#, create_db_and_tables
 from .routers import post, user
 
-app = FastAPI(lifespan=lifespan, title='Posts with SQLModel')
+app = FastAPI(
+        lifespan=lifespan, 
+        title='Posts with SQLModel', 
+        description='API for managing posts and users', 
+        version='1.0.0',
+        openapi_tags=[
+            {
+                "name": "Post",
+                "description": "Endpoints related to blog posts.",
+            },
+            {
+                "name": "User",
+                "description": "Operations related to user management."
+            }
+        ]
+    )
 app.include_router(post.router)
 app.include_router(user.router)
 

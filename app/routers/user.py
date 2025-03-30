@@ -6,12 +6,12 @@ from .. import models, schemas, utils
 from ..database import SessionDep
 
 
-router = APIRouter()
+router = APIRouter(prefix="/api/users", tags=["User"])
 
 # ------------------- Endpoints -------------------
 
 # POST Users
-@router.post("/users",status_code=status.HTTP_201_CREATED,response_model=schemas.UserOut)
+@router.post("/",status_code=status.HTTP_201_CREATED,response_model=schemas.UserOut)
 async def create_user(user: schemas.UserCreate,session:SessionDep):
     verify_email = session.exec(select(models.User).where(models.User.email == user.email)).first()
     if verify_email:
@@ -29,7 +29,7 @@ async def create_user(user: schemas.UserCreate,session:SessionDep):
     return user
 
 # GET Users
-@router.get("/users/{id}", response_model=schemas.UserOut)
+@router.get("/{id}", response_model=schemas.UserOut)
 async def get_users(id:int, session: SessionDep):
     user = session.exec(select(models.User).where(models.User.id == id)).first()
     if not user:
