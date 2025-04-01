@@ -29,3 +29,7 @@ class UserOut(SQLModel):
 
     class Config:
         from_attributes = True
+
+class UserLogin(SQLModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=64)

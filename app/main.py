@@ -1,13 +1,7 @@
-from fastapi import FastAPI, status, HTTPException, Query
-from fastapi.responses import Response
+from fastapi import FastAPI
 
-from sqlmodel import select
-from datetime import datetime, timezone
-from dotenv import load_dotenv
-
-from . import models, schemas, utils
-from .database import SessionDep, lifespan, engine#, create_db_and_tables
-from .routers import post, user
+from .database import lifespan
+from .routers import post, user, auth
 
 app = FastAPI(
         lifespan=lifespan, 
@@ -27,6 +21,7 @@ app = FastAPI(
     )
 app.include_router(post.router)
 app.include_router(user.router)
+app.include_router(auth.router)
 
 # ------------------- Endpoints -------------------
 # GET /posts --------------------------------------
