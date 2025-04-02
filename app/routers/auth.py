@@ -6,7 +6,7 @@ from .. utils import verify
 
 router = APIRouter(prefix='/api',tags=["Auth"])
 
-@router.post("/login")
+@router.post("/login", response_model=schemas.Token)
 async def login(session:database.SessionDep,user_credencials:OAuth2PasswordRequestForm = Depends()):
     user = session.exec(select(models.User).where(models.User.email == user_credencials.username)).first()
     if not user or not verify(user_credencials.password, user.password):

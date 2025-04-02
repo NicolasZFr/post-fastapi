@@ -33,3 +33,10 @@ class UserOut(SQLModel):
 class UserLogin(SQLModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=64)
+
+class Token(SQLModel):
+    access_token: str
+    token_type: str
+
+class TokenData(SQLModel):
+    id: str | None = None

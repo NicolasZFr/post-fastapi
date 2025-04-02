@@ -1,11 +1,11 @@
-from fastapi import status, HTTPException, Query, APIRouter
+from fastapi import status, HTTPException, Query, APIRouter, Depends
 
 from sqlmodel import select
 
-from .. import models, schemas
+from .. import models, schemas,oauth2
 from ..database import SessionDep, engine
 
-router = APIRouter(prefix="/api/posts", tags=["Post"])
+router = APIRouter(prefix="/api/posts", tags=["Post"],dependencies=[Depends(oauth2.get_current_user)])
 
 # ------------------- Endpoints -------------------
 
