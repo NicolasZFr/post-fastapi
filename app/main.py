@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from .database import lifespan
+from app.databases.database import lifespan
 from .routers import post, user, auth
 
 app = FastAPI(

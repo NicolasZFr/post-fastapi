@@ -6,7 +6,8 @@ from sqlalchemy import create_engine
 
 from dotenv import load_dotenv
 import os
-dotenv_path = "./security/.env"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+dotenv_path = os.path.join(BASE_DIR, "security", ".env")
 load_dotenv(dotenv_path,override=True)
 
 postgres_url = f"postgresql://{os.getenv("USER")}:{os.getenv("PASSWORD")}@{os.getenv("HOST")}:{os.getenv("PORT")}/{os.getenv("DATABASE")}"

@@ -3,17 +3,22 @@ from datetime import datetime,timedelta,timezone
 from fastapi import Depends, HTTPException,status
 from fastapi.security import OAuth2PasswordBearer
 
-from . import schemas
+from app.schemas.token import *
 
 #SECRET_KEY
 #Algorythm
 #Expiration time
 
+from dotenv import load_dotenv
+import os
+dotenv_path = "./security/algorythm.env"
+load_dotenv(dotenv_path,override=True)
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login", auto_error=True) #
 
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+SECRET_KEY = os.getenv("SECRET_PKEY")
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -28,7 +33,7 @@ def verify_access_token(token: str, credentials_exception):
         id: str = payload.get("user_id")
         if id is None:
             raise credentials_exception
-        token_data = schemas.TokenData(id=str(id))
+        token_data = TokenData(id=str(id))
     except jwt.PyJWTError:
         raise credentials_exception
     return token_data

@@ -2,8 +2,11 @@ from fastapi import status, HTTPException, Query, APIRouter, Depends
 
 from sqlmodel import select
 
-from .. import models, schemas,oauth2
-from ..database import SessionDep, engine
+from app.model import Post, User
+from app.schemas.post import *
+
+from .. import oauth2
+from app.databases.database import SessionDep, engine
 
 router = APIRouter(prefix="/api/posts", tags=["Post"],dependencies=[Depends(oauth2.get_current_user)])
 
@@ -11,32 +14,36 @@ router = APIRouter(prefix="/api/posts", tags=["Post"],dependencies=[Depends(oaut
 
 # GET /posts --------------------------------------
 @router.get("/")
-async def get_posts_list(session: SessionDep, Quantity: int = 10, Page: int = 1):
-    query = select(models.Post).limit(Quantity).offset((Page - 1) * Quantity).order_by(models.Post.id.asc())
+async def get_posts_list(session: SessionDep, Quantity: int = None, Page: int = 1, user: User = Depends(oauth2.get_current_user)):
+    query = select(Post)
+    if session.exec(select(User.id).where(User.id == user.id)).first() != 1:
+        query = query.where(Post.user_id == user.id)
+    if Quantity is not None:
+        query = query.limit(Quantity).offset((Page - 1) * Quantity).order_by(Post.id.asc())
     posts = session.exec(query).all()  # Selecciona todos los registros de la tabla posts
-    print(query.compile())
+    # print(query.compile())
     ordered_posts = [
-        {field: getattr(post, field) for field in models.Post.model_fields.keys()}
+        {field: getattr(post, field) for field in Post.model_fields.keys()}
         for post in posts
     ]
     return {"data": ordered_posts}
 
-@router.get("/latest")
+@router.get("/latest",response_model=PostOut)
 async def get_latest_post(session: SessionDep):
-    query = select(models.Post).order_by(models.Post.id.desc())
+    query = select(Post).order_by(Post.id.desc())
     post = session.exec(query).first()  # Selecciona todos los registros de la tabla posts
     print(query.compile(engine))
-    ordered_posts = {field: getattr(post, field) for field in models.Post.model_fields.keys()}
-    return {"data": ordered_posts}
+    ordered_posts = {field: getattr(post, field) for field in Post.model_fields.keys()}
+    return ordered_posts
 
 @router.get("/{id}")
 async def get_post_object(session: SessionDep,id:int):
-    post = session.exec(select(models.Post).where(models.Post.id == id)).all()
+    post = session.exec(select(Post).where(Post.id == id)).all()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id '{id}' not found")
     
     ordered_posts = [
-        {field: getattr(post, field) for field in models.Post.model_fields.keys()}
+        {field: getattr(post, field) for field in Post.model_fields.keys()}
         for post in post
     ]
         
@@ -44,8 +51,8 @@ async def get_post_object(session: SessionDep,id:int):
 
 
 # POST /posts --------------------------------------
-@router.post("/",status_code=status.HTTP_201_CREATED, response_model=schemas.PostCreateResponse)
-async def create_posts(session: SessionDep, post: schemas.PostCreate):
+@router.post("/",status_code=status.HTTP_201_CREATED, response_model=PostCreateResponse)
+async def create_posts(session: SessionDep, post: PostCreate, user: User = Depends(oauth2.get_current_user)):
     required_fields = ["title", "content", "rating"]
     missing_fields = [field for field in required_fields if field not in post.model_dump(exclude_unset=True)]
     if missing_fields:
@@ -54,10 +61,10 @@ async def create_posts(session: SessionDep, post: schemas.PostCreate):
             detail=f"Missing required fields: {', '.join(missing_fields)}"
         )
     # Verifica si el post ya existe
-    existing_post = session.exec(select(models.Post).where(models.Post.title == post.title,models.Post.content == post.content)).first()
+    existing_post = session.exec(select(Post).where(Post.title == post.title,Post.content == post.content)).first()
     if existing_post:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Post with the same title and content already exists")
-    post = models.Post(**post.model_dump())
+    post = Post(user.id,**post.model_dump())  # Asigna el ID del usuario actual al nuevo post
 
     try:
         session.add(post)
@@ -77,22 +84,26 @@ async def create_posts(session: SessionDep, post: schemas.PostCreate):
 
 # DELETE /posts --------------------------------------
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_post(id: int, session: SessionDep):
-    post = session.get(models.Post, id)
+async def delete_post(id: int, session: SessionDep, user: User = Depends(oauth2.get_current_user)):
+    post = session.get(Post, id)
 
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id '{id}' not found")
+    elif post.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete this post")
 
     session.delete(post)
     session.commit()
 
 # PUT /posts --------------------------------------
 @router.put("/{id}")
-async def put_post(id: int, post: schemas.PostCreate, session: SessionDep):
-    existing_post = session.get(models.Post, id)
+async def put_post(id: int, post: PostCreate, session: SessionDep, user: User = Depends(oauth2.get_current_user)):
+    existing_post = session.get(Post, id)
 
     if not existing_post:
         raise HTTPException(status_code=404, detail=f"Post with id '{id}' not found")
+    elif existing_post.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to modify this post")
 
     updated_data = post.model_dump()
 
@@ -107,15 +118,17 @@ async def put_post(id: int, post: schemas.PostCreate, session: SessionDep):
     session.commit()
     session.refresh(existing_post)
 
-    return {"response": f"The post with id '{id}' was updated successfully", "data": {field: getattr(existing_post, field) for field in models.Post.model_fields.keys()}}
+    return {"response": f"The post with id '{id}' was updated successfully", "data": {field: getattr(existing_post, field) for field in Post.model_fields.keys()}}
     
 # PATCH /posts --------------------------------------  
 @router.patch("/{id}")
-async def patch_post(id: int, post: schemas.PostCreate, session: SessionDep):
-    existing_post = session.get(models.Post, id)
+async def patch_post(id: int, post: PostCreate, session: SessionDep, user: User = Depends(oauth2.get_current_user)):
+    existing_post = session.get(Post, id)
 
     if not existing_post:
         raise HTTPException(status_code=404, detail=f"Post with id '{id}' not found")
+    elif existing_post.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to modify this post")
 
     updated_data = post.model_dump(exclude_unset=True)
     
@@ -129,4 +142,4 @@ async def patch_post(id: int, post: schemas.PostCreate, session: SessionDep):
     session.commit()
     session.refresh(existing_post)
 
-    return {"response": f"The post with id '{id}' was updated successfully", "data": {field: getattr(existing_post, field) for field in models.Post.model_fields.keys()}}
+    return {"response": f"The post with id '{id}' was updated successfully", "data": {field: getattr(existing_post, field) for field in Post.model_fields.keys()}}
