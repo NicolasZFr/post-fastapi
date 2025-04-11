@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Response, Depends
 
-from app.databases import database
-from app.model import Post, User
+from app.infrastructure.databases import database
+from app.infrastructure.model import User
 from app.schemas.token import *
 
 from .. import oauth2

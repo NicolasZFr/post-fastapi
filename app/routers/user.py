@@ -2,11 +2,11 @@ from fastapi import status, HTTPException, Query, APIRouter
 
 from sqlmodel import select
 
-from app.model import Post, User
+from app.infrastructure.model import Post, User
 from app.schemas.user import *
 
 from .. import utils
-from app.databases.database import SessionDep
+from app.infrastructure.databases.database import SessionDep
 
 
 router = APIRouter(prefix="/api/users", tags=["User"])

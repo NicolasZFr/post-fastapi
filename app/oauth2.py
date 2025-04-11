@@ -11,7 +11,8 @@ from app.schemas.token import *
 
 from dotenv import load_dotenv
 import os
-dotenv_path = "./security/algorythm.env"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+dotenv_path = os.path.join(BASE_DIR, "security", "algorythm.env")
 load_dotenv(dotenv_path,override=True)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login", auto_error=True) #

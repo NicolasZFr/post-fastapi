@@ -1,14 +1,16 @@
 from fastapi import status, HTTPException, Query, APIRouter, Depends
+from fastapi.responses import JSONResponse
 
 from sqlmodel import select
 
-from app.model import Post, User
+from app.infrastructure.model import Post, User
 from app.schemas.post import *
 
 from .. import oauth2
-from app.databases.database import SessionDep, engine
+from app.infrastructure.databases.database import SessionDep, engine
+from sqlalchemy.orm import selectinload
 
-router = APIRouter(prefix="/api/posts", tags=["Post"],dependencies=[Depends(oauth2.get_current_user)])
+router = APIRouter(prefix="/api/posts", tags=["Post"])#,dependencies=[Depends(oauth2.get_current_user)])
 
 # ------------------- Endpoints -------------------
 
@@ -30,11 +32,27 @@ async def get_posts_list(session: SessionDep, Quantity: int = None, Page: int = 
 
 @router.get("/latest",response_model=PostOut)
 async def get_latest_post(session: SessionDep):
-    query = select(Post).order_by(Post.id.desc())
-    post = session.exec(query).first()  # Selecciona todos los registros de la tabla posts
-    print(query.compile(engine))
+    post = session.exec(select(Post).order_by(Post.id.desc())).first()
     ordered_posts = {field: getattr(post, field) for field in Post.model_fields.keys()}
+    user = session.exec(select(User).where(User.id == post.user_id)).first()
+    ordered_posts["user"] = user.model_dump(exclude={"password"})
     return ordered_posts
+
+# @router.get("/latest")
+# async def get_latest_post(session: SessionDep):
+#     post = session.exec(select(Post,User).join(User).order_by(Post.id.desc())).first()
+#     post, user = post
+#     return {"post": post, "user": user}
+
+# @router.get("/latest", response_model=PostOut)
+# async def get_latest_post(session: SessionDep):
+#     post = session.exec(
+#         select(Post)
+#         .options(selectinload(Post.user))
+#         .order_by(Post.id.desc())
+#     ).first()
+
+#     return post
 
 @router.get("/{id}")
 async def get_post_object(session: SessionDep,id:int):

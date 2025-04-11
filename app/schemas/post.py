@@ -25,7 +25,7 @@ class PostOut(BasePost):
     created_at: datetime
     updated_at: datetime | None = None
     user_id: int | None = None
-    # user: "UserOut"
+    user: UserOut
 
     class Config:
         from_attributes = True
