@@ -16,8 +16,8 @@ router = APIRouter(prefix="/api/posts", tags=["Post"])#,dependencies=[Depends(oa
 
 # GET /posts --------------------------------------
 @router.get("/")
-async def get_posts_list(session: SessionDep, Quantity: int = None, Page: int = 1, user: User = Depends(oauth2.get_current_user)):
-    query = select(Post)
+async def get_posts_list(session: SessionDep, Quantity: int = None, Page: int = 1, user: User = Depends(oauth2.get_current_user), keyword: str = Query(default="", max_length=50, description="Palabra clave para buscar")):
+    query = select(Post).where(Post.content.contains(keyword))
     if session.exec(select(User.id).where(User.id == user.id)).first() != 1:
         query = query.where(Post.user_id == user.id)
     if Quantity is not None:
