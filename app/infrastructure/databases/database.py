@@ -3,14 +3,9 @@ from sqlmodel import Session, SQLModel, create_engine
 from typing import Annotated
 from fastapi import FastAPI
 from sqlalchemy import create_engine
+from app.core.config import settings
 
-from dotenv import load_dotenv
-import os
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-dotenv_path = os.path.join(BASE_DIR, "security", ".env")
-load_dotenv(dotenv_path,override=True)
-
-postgres_url = f"postgresql://{os.getenv("USER")}:{os.getenv("PASSWORD")}@{os.getenv("HOST")}:{os.getenv("PORT")}/{os.getenv("DATABASE")}"
+postgres_url = f"postgresql://{settings.user}:{settings.password}@{settings.host}:{settings.port}/{settings.database}"
 
 engine = create_engine(postgres_url)
 

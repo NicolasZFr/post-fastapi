@@ -1,36 +1,48 @@
 from fastapi import status, HTTPException, Query, APIRouter, Depends
 from fastapi.responses import JSONResponse
 
-from sqlmodel import select
+from sqlmodel import select,func
+from typing import List
 
-from app.infrastructure.model import Post, User
+from app.infrastructure.model import Post, User, Vote
 from app.schemas.post import *
 
 from .. import oauth2
 from app.infrastructure.databases.database import SessionDep, engine
 from sqlalchemy.orm import selectinload
 
-router = APIRouter(prefix="/api/posts", tags=["Post"])#,dependencies=[Depends(oauth2.get_current_user)])
+router = APIRouter(prefix="/api/posts", tags=["Post"], dependencies=[Depends(oauth2.get_current_user)])
 
 # ------------------- Endpoints -------------------
 
 # GET /posts --------------------------------------
-@router.get("/")
+@router.get("/", response_model=List[PostOrder])
 async def get_posts_list(session: SessionDep, Quantity: int = None, Page: int = 1, user: User = Depends(oauth2.get_current_user), keyword: str = Query(default="", max_length=50, description="Palabra clave para buscar")):
-    query = select(Post).where(Post.content.contains(keyword))
-    if session.exec(select(User.id).where(User.id == user.id)).first() != 1:
-        query = query.where(Post.user_id == user.id)
-    if Quantity is not None:
-        query = query.limit(Quantity).offset((Page - 1) * Quantity).order_by(Post.id.asc())
-    posts = session.exec(query).all()  # Selecciona todos los registros de la tabla posts
-    # print(query.compile())
-    ordered_posts = [
-        {field: getattr(post, field) for field in Post.model_fields.keys()}
-        for post in posts
-    ]
-    return {"data": ordered_posts}
+    # query = select(Post).where(Post.content.contains(keyword))
+    query = (
+        select(Post, func.count(Vote.post_id).label("votes_count"))
+        .join(Vote, Vote.post_id == Post.id, isouter=True)
+        .where(Post.content.ilike(f"%{keyword}%"))
+        .group_by(Post.id)
+        .order_by(Post.id.asc())
+    )
+    if Quantity:
+        query = query.limit(Quantity).offset((Page - 1) * Quantity)
 
-@router.get("/latest",response_model=PostOut)
+    posts_with_votes = session.exec(query).all()
+
+    results = [
+        {
+            **{field: getattr(post, field) for field in Post.model_fields.keys()},
+            "user": session.exec(select(User).where(User.id == post.user_id)).first().model_dump(exclude={"password"}),
+            "votes": votes
+        }
+        for post, votes in posts_with_votes
+    ]
+
+    return results
+
+@router.get("/latest",response_model=PostOrder)
 async def get_latest_post(session: SessionDep):
     post = session.exec(select(Post).order_by(Post.id.desc())).first()
     ordered_posts = {field: getattr(post, field) for field in Post.model_fields.keys()}

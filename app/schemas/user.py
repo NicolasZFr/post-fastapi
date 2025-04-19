@@ -14,10 +14,18 @@ class UserCreate(BaseUser):
 class UserOut(BaseUser):
     id: int
     userrole_id: int
-    created_at: datetime
 
     class Config:
         from_attributes = True
 
 class UserLogin(BaseUser):
     password: str = Field(min_length=8, max_length=64)
+
+
+class UserOrder(BaseModel):
+    id: int
+    email: EmailStr
+    userrole_id: int
+
+    class Config:
+        from_attributes = True

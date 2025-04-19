@@ -2,6 +2,7 @@ import jwt
 from datetime import datetime,timedelta,timezone
 from fastapi import Depends, HTTPException,status
 from fastapi.security import OAuth2PasswordBearer
+from app.core.config import setting_algorythm
 
 from app.schemas.token import *
 
@@ -9,28 +10,18 @@ from app.schemas.token import *
 #Algorythm
 #Expiration time
 
-from dotenv import load_dotenv
-import os
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-dotenv_path = os.path.join(BASE_DIR, "security", "algorythm.env")
-load_dotenv(dotenv_path,override=True)
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login", auto_error=True) #
-
-SECRET_KEY = os.getenv("SECRET_PKEY")
-ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=setting_algorythm.expire_token)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, setting_algorythm.secret_pkey, algorithm=setting_algorythm.algorythm)
     return encoded_jwt
 
 def verify_access_token(token: str, credentials_exception):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, setting_algorythm.secret_pkey, algorithms=[setting_algorythm.algorythm])
         id: str = payload.get("user_id")
         if id is None:
             raise credentials_exception

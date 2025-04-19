@@ -22,9 +22,9 @@ class User(SQLModel, table=True):
     userrole_id: int = Field(default=2, sa_column=Column(Integer, ForeignKey("parametric.userroles.id", ondelete="SET DEFAULT")))
     # posts: List["Post"] = Relationship(back_populates="user")
 
-User.model_rebuild()
+# User.model_rebuild()
 
-User.posts = Relationship(back_populates="user", sa_relationship_kwargs={"lazy": "selectin"})
+# User.posts = Relationship(back_populates="user", sa_relationship_kwargs={"lazy": "selectin"})
 
 # class Vote(SQLModel, table=True):
 #     user_id: int = Field(foreign_key="users.id", primary_key=True)

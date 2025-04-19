@@ -4,7 +4,7 @@ from sqlmodel import Field, Session, SQLModel, Relationship
 from typing import Optional, List
 from app import schemas
 from sqlalchemy import Column, TIMESTAMP, text, ForeignKey, Integer, orm
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from typing import TYPE_CHECKING
 
@@ -27,11 +27,6 @@ class Post(SQLModel, table=True):
     # user: Optional["User"] = Relationship(back_populates="posts", sa_relationship_kwargs={"foreign_keys": "[Post.user_id]"})
 
 
-Post.model_rebuild()
+# Post.model_rebuild()
 
-Post.user = Relationship(back_populates="posts", sa_relationship_kwargs={"lazy": "selectin", "foreign_keys": "[Post.user_id]"})
-
-
-# class Vote(SQLModel, table=True):
-#     user_id: int = Field(foreign_key="users.id", primary_key=True)
-#     post_id: int = Field(foreign_key="posts.id", primary_key=True)
+# Post.user = Relationship(back_populates="posts", sa_relationship_kwargs={"lazy": "selectin", "foreign_keys": "[Post.user_id]"})
