@@ -19,10 +19,10 @@ router = APIRouter(prefix="/api/votes", tags=["Vote"], dependencies=[Depends(oau
 # POST Votes
 @router.post("/", response_model=VoteResponse)
 async def post_users(vote: VoteBase, session: SessionDep, user: User = Depends(oauth2.get_current_user)):
-    query = select(Vote).where(vote.post_id == Vote.post_id)
+    query = select(Post).where(Post.id == vote.post_id)
     if not session.exec(query).first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {vote.post_id} doesn't exist")
-    query = query.where(Vote.user_id == user.id)
+    query = select(Vote).where(vote.post_id == Vote.post_id,Vote.user_id == user.id)
     vote_query = session.exec(query).first()
     if vote.dir == 1:
         if vote_query:
@@ -43,4 +43,5 @@ async def post_users(vote: VoteBase, session: SessionDep, user: User = Depends(o
 # GET Votes
 @router.get("/")
 async def get_users(session: SessionDep):
-    votes = session.exec(select(Vote.user_id,Post).where(Vote.post_id == Post.id)).all()
+    votes = session.exec(select(Vote).order_by(Vote.post_id.asc())).all()
+    return votes

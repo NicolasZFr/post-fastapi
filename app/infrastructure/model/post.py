@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlmodel import Field, Session, SQLModel, Relationship
 from typing import Optional, List
 from app import schemas
-from sqlalchemy import Column, TIMESTAMP, text, ForeignKey, Integer, orm
+from sqlalchemy import Column, TIMESTAMP, text, ForeignKey, Integer, orm,DateTime
 from sqlalchemy.orm import relationship, Mapped
 
 from typing import TYPE_CHECKING
@@ -21,9 +21,9 @@ class Post(SQLModel, table=True):
     published: bool = True
     rating: float | None = None
 
-    created_at: datetime = Field(default=None, sa_column_kwargs={"server_default": text("CURRENT_TIMESTAMP")}, exclude=True)
-    updated_at: datetime | None = Field(default=None,sa_column_kwargs={"onupdate": text("CURRENT_TIMESTAMP")}, exclude=True)
-    user_id: int | None = Field(sa_column=Column(Integer, ForeignKey("public.users.id", ondelete="SET NULL"), nullable=True))
+    created_at: datetime = Field(default=None, sa_column_kwargs={"server_default": text("CURRENT_TIMESTAMP")}, sa_type=DateTime(timezone=True), exclude=True)
+    updated_at: datetime | None = Field(default=None,sa_column_kwargs={"server_default": "NULL","onupdate": text("CURRENT_TIMESTAMP")}, sa_type=DateTime(timezone=True), exclude=True)
+    user_id: int | None = Field(sa_column=Column(Integer, ForeignKey("public.users.id",name="fk_posts_user_id", ondelete="SET NULL"), nullable=True))
     # user: Optional["User"] = Relationship(back_populates="posts", sa_relationship_kwargs={"foreign_keys": "[Post.user_id]"})
 
 

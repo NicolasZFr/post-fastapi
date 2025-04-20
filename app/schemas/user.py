@@ -6,6 +6,7 @@ from pydantic import EmailStr, BaseModel
 
 class BaseUser(BaseModel):
     email: EmailStr
+    # phone_number: str | None = None
 
 class UserCreate(BaseUser):
     password: str = Field(min_length=8, max_length=64)
@@ -13,7 +14,7 @@ class UserCreate(BaseUser):
 
 class UserOut(BaseUser):
     id: int
-    userrole_id: int
+    # userrole_id: int
 
     class Config:
         from_attributes = True
@@ -25,7 +26,8 @@ class UserLogin(BaseUser):
 class UserOrder(BaseModel):
     id: int
     email: EmailStr
-    userrole_id: int
+    # phone_number: str | None = None
+    # userrole_id: int
 
     class Config:
         from_attributes = True

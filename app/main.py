@@ -32,3 +32,4 @@ app.include_router(vote.router)
 async def root():
     return {"message": "Hello World, I'm Nicolás"}
 # uvicorn app.main:app --reload
+# alembic revision -m "Initial migration"

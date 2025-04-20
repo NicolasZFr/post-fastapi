@@ -34,7 +34,7 @@ async def get_posts_list(session: SessionDep, Quantity: int = None, Page: int = 
     results = [
         {
             **{field: getattr(post, field) for field in Post.model_fields.keys()},
-            "user": session.exec(select(User).where(User.id == post.user_id)).first().model_dump(exclude={"password"}),
+            "user": session.exec(select(User).where(User.id == post.user_id)).first().model_dump(),
             "votes": votes
         }
         for post, votes in posts_with_votes
@@ -44,27 +44,20 @@ async def get_posts_list(session: SessionDep, Quantity: int = None, Page: int = 
 
 @router.get("/latest",response_model=PostOrder)
 async def get_latest_post(session: SessionDep):
-    post = session.exec(select(Post).order_by(Post.id.desc())).first()
-    ordered_posts = {field: getattr(post, field) for field in Post.model_fields.keys()}
-    user = session.exec(select(User).where(User.id == post.user_id)).first()
-    ordered_posts["user"] = user.model_dump(exclude={"password"})
-    return ordered_posts
+    query = (
+        select(Post, func.count(Vote.post_id).label("votes_count"))
+        .join(Vote, Vote.post_id == Post.id, isouter=True)
+        .group_by(Post.id)
+        .order_by(Post.id.desc())
+    )
+    latest_post, vote_count = session.exec(query).first()
+    result = {
+        **{field: getattr(latest_post, field) for field in Post.model_fields.keys()},
+        "user": session.exec(select(User).where(User.id == latest_post.user_id)).first().model_dump(),
+        "votes": vote_count
+    }
+    return result
 
-# @router.get("/latest")
-# async def get_latest_post(session: SessionDep):
-#     post = session.exec(select(Post,User).join(User).order_by(Post.id.desc())).first()
-#     post, user = post
-#     return {"post": post, "user": user}
-
-# @router.get("/latest", response_model=PostOut)
-# async def get_latest_post(session: SessionDep):
-#     post = session.exec(
-#         select(Post)
-#         .options(selectinload(Post.user))
-#         .order_by(Post.id.desc())
-#     ).first()
-
-#     return post
 
 @router.get("/{id}")
 async def get_post_object(session: SessionDep,id:int):
@@ -94,7 +87,7 @@ async def create_posts(session: SessionDep, post: PostCreate, user: User = Depen
     existing_post = session.exec(select(Post).where(Post.title == post.title,Post.content == post.content)).first()
     if existing_post:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Post with the same title and content already exists")
-    post = Post(user.id,**post.model_dump())  # Asigna el ID del usuario actual al nuevo post
+    post = Post(user_id = user.id,**post.model_dump())  # Asigna el ID del usuario actual al nuevo post
 
     try:
         session.add(post)
