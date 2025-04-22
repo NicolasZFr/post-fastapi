@@ -29,7 +29,8 @@ app = FastAPI(
 
 origins = [
     "http://127.0.0.1:8000/docs",
-    "http://127.0.0.1:8000"]
+    "http://127.0.0.1:8000",
+    "https://post-fastapi-86vo.onrender.com"]
 
 app.add_middleware(
     CORSMiddleware,
