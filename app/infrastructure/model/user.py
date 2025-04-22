@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
-    __table_args__ = {"schema": "public"}
+    # __table_args__ = {"schema": "public"}
 
     id: Optional[int] = Field(default=None, primary_key=True)
     email: str = Field(unique=True)
