@@ -14,7 +14,7 @@ load_dotenv(dotenv_alg_path, override=True)
 
 class Settings(BaseSettings):
     host: str
-    port: str
+    portdb: str
     database: str
     user: str
     password: str
