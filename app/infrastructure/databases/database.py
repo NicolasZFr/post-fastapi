@@ -10,7 +10,7 @@ postgres_url = f"postgresql://{settings.user}:{settings.password}@{settings.host
 engine = create_engine(postgres_url)
 
 def load_existing_db():
-    SQLModel.metadata.reflect(engine)
+    SQLModel.metadata.create_all(engine)
     # SQLModel.metadata.reflect(engine)
 
 def get_db():
