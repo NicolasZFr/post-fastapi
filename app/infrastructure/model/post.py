@@ -22,7 +22,7 @@ class Post(SQLModel, table=True):
     rating: float | None = None
 
     created_at: datetime = Field(default=None, sa_column_kwargs={"server_default": text("CURRENT_TIMESTAMP")}, sa_type=DateTime(timezone=True), exclude=True)
-    updated_at: datetime | None = Field(default=None,sa_column_kwargs={"server_default": "NULL","onupdate": text("CURRENT_TIMESTAMP")}, sa_type=DateTime(timezone=True), exclude=True)
+    updated_at: datetime | None = Field(default=None,sa_column_kwargs={"onupdate": text("CURRENT_TIMESTAMP")}, sa_type=DateTime(timezone=True), exclude=True)
     user_id: int | None = Field(sa_column=Column(Integer, ForeignKey("users.id",name="fk_posts_user_id", ondelete="SET NULL"), nullable=True))
     # user: Optional["User"] = Relationship(back_populates="posts", sa_relationship_kwargs={"foreign_keys": "[Post.user_id]"})
 
