@@ -38,11 +38,3 @@ async def get_users(id:int, session: SessionDep):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id '{id}' not found")
     return {field: getattr(user, field) for field in User.model_fields.keys()}
-
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_users(id:int, session: SessionDep):
-    user = session.get(User, id)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id '{id}' not found")
-    session.delete(user)
-    session.commit()
