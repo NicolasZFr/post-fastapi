@@ -3,3 +3,5 @@ copies
 __pycache__
 .vscode
 security
+.vercel
+vercel.json
