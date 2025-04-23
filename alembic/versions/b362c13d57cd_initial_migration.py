@@ -29,8 +29,8 @@ def upgrade() -> None:
                     sa.Column('published', sa.Boolean(), nullable=False, server_default=sa.text('true')),
                     sa.Column('rating', sa.Float(), nullable=True),
                     sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
-                    sa.Column('updated_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), onupdate=sa.text('CURRENT_TIMESTAMP'), nullable=True),
-                    schema='public'
+                    sa.Column('updated_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), onupdate=sa.text('CURRENT_TIMESTAMP'), nullable=True)
+                    # schema='public'
                     )
 
 def downgrade() -> None:

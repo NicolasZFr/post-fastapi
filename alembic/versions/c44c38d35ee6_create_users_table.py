@@ -24,9 +24,9 @@ def upgrade() -> None:
                 sa.Column('id',sa.Integer(), primary_key=True, nullable=False),
                 sa.Column('email', sa.String(), unique=True, nullable=False),
                 sa.Column('password', sa.String(), nullable=False),
-                sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('NOW()'), nullable=True),
+                sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('NOW()'), nullable=True)
                 # sa.Column('userrole_id', sa.Integer(), sa.ForeignKey('parametrics.userrole.id', ondelete='SET DEFAULT'), nullable=True),
-                schema='public'
+                # schema='public'
                 )
     op.add_column('posts', sa.Column('user_id', sa.Integer(), nullable=True), schema='public')
     op.create_foreign_key('fk_posts_user_id',

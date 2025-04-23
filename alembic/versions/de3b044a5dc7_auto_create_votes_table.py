@@ -23,15 +23,15 @@ def upgrade() -> None:
     op.create_table('votes',
     sa.Column('post_id', sa.Integer(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['post_id'], ['public.posts.id'], name='fk_votes_posts_id', onupdate='CASCADE', ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['public.users.id'], name='fk_votes_users_id', onupdate='CASCADE', ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('post_id', 'user_id'),
-    schema='public'
+    sa.ForeignKeyConstraint(['post_id'], ['posts.id'], name='fk_votes_posts_id', onupdate='CASCADE', ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name='fk_votes_users_id', onupdate='CASCADE', ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('post_id', 'user_id')
+    # schema='public'
     )
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_table('votes', schema='public')
+    op.drop_table('votes')#, schema='public')
     # ### end Alembic commands ###
