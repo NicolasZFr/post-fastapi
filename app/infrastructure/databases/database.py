@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from sqlalchemy import create_engine
 from app.core.config import settings
 
-postgres_url = f"postgresql://{settings.user}:{settings.password}@{settings.host}:{settings.port}/{settings.database}"
+postgres_url = f"postgresql://{settings.user}:{settings.password}@{settings.host}:{settings.portdb}/{settings.database}"
 
 engine = create_engine(postgres_url)
 
