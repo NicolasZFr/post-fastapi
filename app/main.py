@@ -25,8 +25,7 @@ app = FastAPI(
 # ------------------- Middleware -------------------
 
 origins = [
-    "http://127.0.0.1:8000/docs",
-    "http://127.0.0.1:8000"]
+    "*"]
 
 app.add_middleware(
     CORSMiddleware,

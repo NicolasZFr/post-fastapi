@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 import os
 from dotenv import load_dotenv
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Cargar el .env general
 dotenv_path = os.path.join(BASE_DIR, "security", ".env")
@@ -14,7 +14,7 @@ load_dotenv(dotenv_alg_path, override=True)
 
 class Settings(BaseSettings):
     host: str
-    port: str
+    portdb: str
     database: str
     user: str
     password: str

@@ -1,0 +1,29 @@
+# Bytecode de Python
+__pycache__/
+*.py[cod]
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de Git
+.git
+.gitignore
+
+# Archivos de entorno
+.env
+*.env
+
+# Configuración local de VSCode
+.vscode/
+
+# Archivos temporales
+*.log
+*.sqlite3
+*.db
+
+# Carpeta de desarrollo con VS Code en contenedor
+.devcontainer/
+
+# Otros
+tests/__pycache__/
