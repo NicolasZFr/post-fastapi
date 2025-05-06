@@ -3,7 +3,5 @@ copies
 __pycache__
 .vscode
 security
-.devcontainer/
 entrypoint.sh
-docker-compose.dev.yml
 .env
